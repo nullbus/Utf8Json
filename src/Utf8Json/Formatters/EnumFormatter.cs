@@ -133,8 +133,8 @@ namespace Utf8Json.Formatters
         readonly static ByteArrayStringHashTable<T> nameValueMapping;
         readonly static Dictionary<T, string> valueNameMapping;
 
-        readonly static JsonSerializeAction<T> defaultSerializeByUnderlyingValue;
-        readonly static JsonDeserializeFunc<T> defaultDeserializeByUnderlyingValue;
+        // readonly static JsonSerializeAction<T> defaultSerializeByUnderlyingValue;
+        // readonly static JsonDeserializeFunc<T> defaultDeserializeByUnderlyingValue;
 
         static EnumFormatter()
         {
@@ -170,44 +170,44 @@ namespace Utf8Json.Formatters
             }
 
             // boxed... or generate...
-            {
-                bool isBoxed;
-                var serialize = EnumFormatterHelper.GetSerializeDelegate(typeof(T), out isBoxed);
-                if (isBoxed)
-                {
-                    var boxSerialize = (JsonSerializeAction<object>)serialize;
-                    defaultSerializeByUnderlyingValue = (ref JsonWriter writer, T value, IJsonFormatterResolver _) => boxSerialize.Invoke(ref writer, (object)value, _);
-                }
-                else
-                {
-                    defaultSerializeByUnderlyingValue = (JsonSerializeAction<T>)serialize;
-                }
-            }
+            // {
+            //     bool isBoxed;
+            //     var serialize = EnumFormatterHelper.GetSerializeDelegate(typeof(T), out isBoxed);
+            //     if (isBoxed)
+            //     {
+            //         var boxSerialize = (JsonSerializeAction<object>)serialize;
+            //         defaultSerializeByUnderlyingValue = (ref JsonWriter writer, T value, IJsonFormatterResolver _) => boxSerialize.Invoke(ref writer, (object)value, _);
+            //     }
+            //     else
+            //     {
+            //         defaultSerializeByUnderlyingValue = (JsonSerializeAction<T>)serialize;
+            //     }
+            // }
 
-            {
-                bool isBoxed;
-                var deserialize = EnumFormatterHelper.GetDeserializeDelegate(typeof(T), out isBoxed);
-                if (isBoxed)
-                {
-                    var boxDeserialize = (JsonDeserializeFunc<object>)deserialize;
-                    defaultDeserializeByUnderlyingValue = (ref JsonReader reader, IJsonFormatterResolver _) => (T)boxDeserialize.Invoke(ref reader, _);
-                }
-                else
-                {
-                    defaultDeserializeByUnderlyingValue = (JsonDeserializeFunc<T>)deserialize;
-                }
-            }
+            // {
+            //     bool isBoxed;
+            //     var deserialize = EnumFormatterHelper.GetDeserializeDelegate(typeof(T), out isBoxed);
+            //     if (isBoxed)
+            //     {
+            //         var boxDeserialize = (JsonDeserializeFunc<object>)deserialize;
+            //         defaultDeserializeByUnderlyingValue = (ref JsonReader reader, IJsonFormatterResolver _) => (T)boxDeserialize.Invoke(ref reader, _);
+            //     }
+            //     else
+            //     {
+            //         defaultDeserializeByUnderlyingValue = (JsonDeserializeFunc<T>)deserialize;
+            //     }
+            // }
         }
 
-        readonly bool serializeByName;
-        readonly JsonSerializeAction<T> serializeByUnderlyingValue;
-        readonly JsonDeserializeFunc<T> deserializeByUnderlyingValue;
+        // readonly bool serializeByName;
+        // readonly JsonSerializeAction<T> serializeByUnderlyingValue;
+        // readonly JsonDeserializeFunc<T> deserializeByUnderlyingValue;
 
         public EnumFormatter(bool serializeByName)
         {
-            this.serializeByName = serializeByName;
-            this.serializeByUnderlyingValue = defaultSerializeByUnderlyingValue;
-            this.deserializeByUnderlyingValue = defaultDeserializeByUnderlyingValue;
+            // this.serializeByName = serializeByName;
+            // this.serializeByUnderlyingValue = defaultSerializeByUnderlyingValue;
+            // this.deserializeByUnderlyingValue = defaultDeserializeByUnderlyingValue;
         }
 
         /// <summary>
@@ -215,14 +215,14 @@ namespace Utf8Json.Formatters
         /// </summary>
         public EnumFormatter(JsonSerializeAction<T> valueSerializeAction, JsonDeserializeFunc<T> valueDeserializeAction)
         {
-            this.serializeByName = false;
-            this.serializeByUnderlyingValue = valueSerializeAction;
-            this.deserializeByUnderlyingValue = valueDeserializeAction;
+            // this.serializeByName = false;
+            // this.serializeByUnderlyingValue = valueSerializeAction;
+            // this.deserializeByUnderlyingValue = valueDeserializeAction;
         }
 
         public void Serialize(ref JsonWriter writer, T value, IJsonFormatterResolver formatterResolver)
         {
-            if (serializeByName)
+            // if (serializeByName)
             {
                 string name;
                 if (!valueNameMapping.TryGetValue(value, out name))
@@ -231,10 +231,10 @@ namespace Utf8Json.Formatters
                 }
                 writer.WriteString(name);
             }
-            else
-            {
-                serializeByUnderlyingValue(ref writer, value, formatterResolver);
-            }
+            // else
+            // {
+            //     serializeByUnderlyingValue(ref writer, value, formatterResolver);
+            // }
         }
 
         public T Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
@@ -254,44 +254,44 @@ namespace Utf8Json.Formatters
                 }
                 return value;
             }
-            else if (token == JsonToken.Number)
-            {
-                return deserializeByUnderlyingValue(ref reader, formatterResolver);
-            }
+            // else if (token == JsonToken.Number)
+            // {
+            //     return deserializeByUnderlyingValue(ref reader, formatterResolver);
+            // }
 
             throw new InvalidOperationException("Can't parse JSON to Enum format.");
         }
 
         public void SerializeToPropertyName(ref JsonWriter writer, T value, IJsonFormatterResolver formatterResolver)
         {
-            if (serializeByName)
+            // if (serializeByName)
             {
                 Serialize(ref writer, value, formatterResolver);
             }
-            else
-            {
-                writer.WriteQuotation();
-                Serialize(ref writer, value, formatterResolver);
-                writer.WriteQuotation();
-            }
+            // else
+            // {
+            //     writer.WriteQuotation();
+            //     Serialize(ref writer, value, formatterResolver);
+            //     writer.WriteQuotation();
+            // }
         }
 
         public T DeserializeFromPropertyName(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
         {
-            if (serializeByName)
+            // if (serializeByName)
             {
                 return Deserialize(ref reader, formatterResolver);
             }
-            else
-            {
-                var token = reader.GetCurrentJsonToken();
-                if (token != JsonToken.String) throw new InvalidOperationException("Can't parse JSON to Enum format.");
-                reader.AdvanceOffset(1); // skip \""
-                var t = Deserialize(ref reader, formatterResolver); // token is Number
-                reader.SkipWhiteSpace();
-                reader.AdvanceOffset(1); // skip \""
-                return t;
-            }
+            // else
+            // {
+            //     var token = reader.GetCurrentJsonToken();
+            //     if (token != JsonToken.String) throw new InvalidOperationException("Can't parse JSON to Enum format.");
+            //     reader.AdvanceOffset(1); // skip \""
+            //     var t = Deserialize(ref reader, formatterResolver); // token is Number
+            //     reader.SkipWhiteSpace();
+            //     reader.AdvanceOffset(1); // skip \""
+            //     return t;
+            // }
         }
     }
 }
